@@ -231,8 +231,9 @@ class TransportationProposal():
                 if(len(list_cost) > 1):
                     penalty = list_cost[1][1] - list_cost[0][1]
                     penalties_order.append((penalty,list_cost[0][0],j))
-                else:
+                elif(len(list_cost) == 1):
                     self.__sent_amount[list_cost[0][0]][j]= int_orders[j]
+                    print('added', int_orders[j])
                     self.__orders[j] = 0
                     int_orders[j] = 0
 
@@ -251,33 +252,89 @@ class TransportationProposal():
                     penalties_provisions.append((penalty, j,list_cost[0][0]))
                 elif(len(list_cost) == 1):
                     self.__sent_amount[j][list_cost[0][0]]= int_provisions[j]
+                    print('added', int_provisions[j])
                     self.__provisions[j] = 0
                     int_provisions[j] = 0
 
         return penalties_order, penalties_provisions
 
-
     def baas_hammer_initialization2(self):
-        while any(self.__provisions) and any(self.__orders):
+        # convert strings to integers for provisions  list and orders list
+        int_provisions = [int(x) for x in self.__provisions]
+        int_orders = [int(x) for x in self.__orders]
 
+        # while there are still provisions and orders to attribute
+        while any(int_provisions) and any(int_orders):
+            # computation of the penalties
             col_penalties, row_penalties = self.penalties_computation()
-            if not row_penalties and not col_penalties:  # No more valid moves left
+
+            print(col_penalties)
+            print(row_penalties)
+
+            # No more valid moves left
+            if not row_penalties and not col_penalties:
                 break
-            if row_penalties and (not col_penalties or max(col_penalties)[0] < max(row_penalties)[0]):
-                _, i, j = max(row_penalties)
-                amount  = min(int(self.__provisions[i]), int(self.__orders[j]))
-                self.__sent_amount[i][j] += int(amount)
-                self.__provisions[i] = int(self.__provisions[i]) - int(amount)
-                self.__orders[j] = int(self.__orders[j]) - int(amount)
+
+            # choose the best move when penalties are equal or choose the highest penalty
+            def select_best_move(penalties):
+                # filter the penalties where order or provisions are 0
+                valid_penalties = [penalty for penalty in penalties if
+                                   int_provisions[penalty[1]] > 0 and int_orders[penalty[2]] > 0]
+                # Sort penalties by highest penalty, lowest cost, and maximum possible fill amount
+                valid_penalties.sort(key=lambda x: (
+                -x[0], self.__problem.cost_matrix[x[1]][x[2]], -min(int_provisions[x[1]], int_orders[x[2]])))
+                return valid_penalties[0] if valid_penalties else None
+
+            # Select the best move based on the sorted penalties
+            if row_penalties and col_penalties:
+                best_row_penalty = select_best_move(row_penalties)
+                best_col_penalty = select_best_move(col_penalties)
+
+                # If no possible move
+                if not best_row_penalty and not best_col_penalty:
+                    break
+
+                # Choose the best move between the row and the col
+                if best_row_penalty and best_col_penalty:
+                    if best_row_penalty[0] > best_col_penalty[0]:
+                        best_penalty = best_row_penalty
+                    elif best_row_penalty[0] < best_col_penalty[0]:
+                        best_penalty = best_col_penalty
+                    else:
+                        # If penalties are equal, compare based on their capacity
+                        if self.__problem.cost_matrix[best_row_penalty[1]][best_row_penalty[2]] <= \
+                                self.__problem.cost_matrix[best_col_penalty[1]][best_col_penalty[2]]:
+                            best_penalty = best_row_penalty
+                        else:
+                            best_penalty = best_col_penalty
+                else:
+                    best_penalty = best_row_penalty or best_col_penalty
+            elif not col_penalties and len(row_penalties) !=1:
+                best_penalty = select_best_move(row_penalties)
+            elif not row_penalties and len(col_penalties) != 1:
+                best_penalty = select_best_move(col_penalties)
             else:
-                _, i, j = max(col_penalties)
-                amount = min(int(self.__provisions[i]), int(self.__orders[j]))
-                self.__sent_amount[i][j] += int(amount)
-                self.__provisions[i] = int(self.__provisions[i]) - int(amount)
-                self.__orders[j] = int(self.__orders[j]) - int(amount)
+                break
+            print(best_penalty)
+            # Make the assignment based on the best penalty
+            if best_penalty:
+                _, i, j = best_penalty
+                amount = min(int_provisions[i], int_orders[j])
+                self.__sent_amount[i][j] += amount
+                print('added amount', amount)
+                int_provisions[i] -= amount
+                int_orders[j] -= amount
+                # Update the string lists after each transaction
+                self.__provisions[i] = str(int_provisions[i])
+                self.__orders[j] = str(int_orders[j])
 
 
+    def transportation_cost(self):
+        total_cost =0
+        for i in range(0,len(self.__sent_amount)):
+            for j in range(0,len(self.__sent_amount[i])):
+                total_cost += int(self.__sent_amount[i][j]) * int(self.__problem.cost_matrix[i][j])
 
-
+        return total_cost
 
 
