@@ -96,6 +96,32 @@ class Problem():
     def print_transportation_proposals(self) :
         
         self.__transpo.print_transportation_proposal()
+    def northwest_initialize(self):
+        i = 0
+        provisions = 0
+        initial_cost = [[0 for j in range(len(self.provisions))] for i in range(len(self.orders))]
+        orders_copy = self.orders.copy()
+        for constraints in self.cost_matrix:
+            j = 0
+            i += 1
+            if self.provisions[i-1] != " ":
+                provisions += int(self.provisions[i-1])
+                for constraint in constraints:
+                    orders = int(orders_copy[j])
+                    j +=1
+                    if provisions > 0 :
+                        if orders - provisions > 0:
+                            initial_cost[i-1][j-1] = provisions
+                            provisions = 0
+                            orders_copy[j-1] = str(int(orders_copy[j-1]) - provisions)
+                        else:
+                            initial_cost[i-1][j-1] = orders
+                            provisions -= orders
+                            orders_copy[j-1] = str(int(orders_copy[j-1]) - orders)
+                    else:
+                        initial_cost[i-1][j-1] = 0
+        print(initial_cost)
+        return(initial_cost)
         
 class TransportationProposal():
 
@@ -180,3 +206,7 @@ class TransportationProposal():
 
         #Prints the table in the terminal.
         print(tabulate(table_content, headers=table_header, tablefmt="simple_grid"))
+
+
+
+
