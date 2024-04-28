@@ -1,4 +1,5 @@
 from tabulate import tabulate
+import copy
 
 #Class that will store a problem's data and related functions.
 class Problem():
@@ -96,32 +97,7 @@ class Problem():
     def print_transportation_proposals(self) :
         
         self.__transpo.print_transportation_proposal()
-    def northwest_initialize(self):
-        i = 0
-        provisions = 0
-        initial_cost = [[0 for j in range(len(self.provisions))] for i in range(len(self.orders))]
-        orders_copy = self.orders.copy()
-        for constraints in self.cost_matrix:
-            j = 0
-            i += 1
-            if self.provisions[i-1] != " ":
-                provisions += int(self.provisions[i-1])
-                for constraint in constraints:
-                    orders = int(orders_copy[j])
-                    j +=1
-                    if provisions > 0 :
-                        if orders - provisions > 0:
-                            initial_cost[i-1][j-1] = provisions
-                            provisions = 0
-                            orders_copy[j-1] = str(int(orders_copy[j-1]) - provisions)
-                        else:
-                            initial_cost[i-1][j-1] = orders
-                            provisions -= orders
-                            orders_copy[j-1] = str(int(orders_copy[j-1]) - orders)
-                    else:
-                        initial_cost[i-1][j-1] = 0
-        print(initial_cost)
-        return(initial_cost)
+
         
 class TransportationProposal():
 
@@ -130,6 +106,8 @@ class TransportationProposal():
         #Related problem.
         self.__problem = pb
 
+        self.__provisions = copy.deepcopy(pb.provisions)
+        self.__orders = copy.deepcopy(pb.orders)
         #Will store the amount of suplly sent each providers to each clients.
         self.__sent_amount = []
 
@@ -206,6 +184,99 @@ class TransportationProposal():
 
         #Prints the table in the terminal.
         print(tabulate(table_content, headers=table_header, tablefmt="simple_grid"))
+
+    def northwest_initialize(self):
+        i = 0
+        provisions = 0
+        initial_cost = [[0 for j in range(len(self.__problem.provisions))] for i in range(len(self.__problem.orders))]
+        orders_copy = self.__problem.orders.copy()
+        for constraints in self.__problem.cost_matrix:
+            j = 0
+            i += 1
+            if self.__problem.provisions[i-1] != " ":
+                provisions += int(self.__problem.provisions[i-1])
+                for constraint in constraints:
+                    orders = int(orders_copy[j])
+                    j +=1
+                    if provisions > 0 :
+                        if orders - provisions > 0:
+                            initial_cost[i-1][j-1] = provisions
+                            provisions = 0
+                            orders_copy[j-1] = str(int(orders_copy[j-1]) - provisions)
+                        else:
+                            initial_cost[i-1][j-1] = orders
+                            provisions -= orders
+                            orders_copy[j-1] = str(int(orders_copy[j-1]) - orders)
+                    else:
+                        initial_cost[i-1][j-1] = 0
+        return(initial_cost)
+
+    def penalties_computation(self):
+        penalties_order = []
+        penalties_provisions = []
+
+        int_orders = [int(x) for x in self.__orders]
+        int_provisions = [int(x) for x in self.__provisions]
+
+        # Compute penalties for orders (columns)
+        for j in range(0,len(int_orders)):
+         if int_orders[j] > 0:
+            list_cost = [(i, int(self.__problem.cost_matrix[i][j])) for i in range(len(int_provisions))]
+            if len(list_cost) > 1:
+                list_cost_copy= list_cost.copy()
+                for i in range(0,len(list_cost)):
+                    if(int_provisions[i] ==0):
+                        list_cost.remove(list_cost_copy[i])
+                list_cost.sort(key=lambda x: x[1])
+                if(len(list_cost) > 1):
+                    penalty = list_cost[1][1] - list_cost[0][1]
+                    penalties_order.append((penalty,list_cost[0][0],j))
+                else:
+                    self.__sent_amount[list_cost[0][0]][j]= int_orders[j]
+                    self.__orders[j] = 0
+                    int_orders[j] = 0
+
+        # Compute penalties for provisions (rows)
+        for j in range(len(int_provisions)):
+          if int_provisions[j] > 0:
+            list_cost = [(i, int(self.__problem.cost_matrix[j][i])) for i in range(len(int_orders))]
+            if len(list_cost) > 1:
+                list_cost_copy = list_cost.copy()
+                for i in range(0, len(list_cost)):
+                    if(int_orders[i] == 0):
+                        list_cost.remove(list_cost_copy[i])
+                list_cost.sort(key=lambda x: x[1])
+                if(len(list_cost) > 1):
+                    penalty = list_cost[1][1] - list_cost[0][1]
+                    penalties_provisions.append((penalty, j,list_cost[0][0]))
+                elif(len(list_cost) == 1):
+                    self.__sent_amount[j][list_cost[0][0]]= int_provisions[j]
+                    self.__provisions[j] = 0
+                    int_provisions[j] = 0
+
+        return penalties_order, penalties_provisions
+
+
+    def baas_hammer_initialization2(self):
+        while any(self.__provisions) and any(self.__orders):
+
+            col_penalties, row_penalties = self.penalties_computation()
+            if not row_penalties and not col_penalties:  # No more valid moves left
+                break
+            if row_penalties and (not col_penalties or max(col_penalties)[0] < max(row_penalties)[0]):
+                _, i, j = max(row_penalties)
+                amount  = min(int(self.__provisions[i]), int(self.__orders[j]))
+                self.__sent_amount[i][j] += int(amount)
+                self.__provisions[i] = int(self.__provisions[i]) - int(amount)
+                self.__orders[j] = int(self.__orders[j]) - int(amount)
+            else:
+                _, i, j = max(col_penalties)
+                amount = min(int(self.__provisions[i]), int(self.__orders[j]))
+                self.__sent_amount[i][j] += int(amount)
+                self.__provisions[i] = int(self.__provisions[i]) - int(amount)
+                self.__orders[j] = int(self.__orders[j]) - int(amount)
+
+
 
 
 
