@@ -186,30 +186,28 @@ class TransportationProposal():
         print(tabulate(table_content, headers=table_header, tablefmt="simple_grid"))
 
     def northwest_initialize(self):
-        i = 0
-        provisions = 0
-        initial_cost = [[0 for j in range(len(self.__problem.provisions))] for i in range(len(self.__problem.orders))]
+        print(self.__sent_amount)
+        i = -1
+        int_provisions = [int(x) for x in self.__provisions]
+        int_orders = [int(x) for x in self.__orders]
         orders_copy = self.__problem.orders.copy()
         for constraints in self.__problem.cost_matrix:
             j = 0
             i += 1
-            if self.__problem.provisions[i-1] != " ":
-                provisions += int(self.__problem.provisions[i-1])
+            if int_provisions[i] != " ":
                 for constraint in constraints:
-                    orders = int(orders_copy[j])
-                    j +=1
-                    if provisions > 0 :
-                        if orders - provisions > 0:
-                            initial_cost[i-1][j-1] = provisions
-                            provisions = 0
-                            orders_copy[j-1] = str(int(orders_copy[j-1]) - provisions)
+                    if int_provisions[i] > 0 and int_orders[j] > 0:
+                        if int_orders[j] - int_provisions[i] > 0:
+                            self.__sent_amount[i][j] = int_provisions[i]
+                            int_orders[j] = int_orders[j] - int_provisions[i]
+                            int_provisions[i] = 0
                         else:
-                            initial_cost[i-1][j-1] = orders
-                            provisions -= orders
-                            orders_copy[j-1] = str(int(orders_copy[j-1]) - orders)
+                            self.__sent_amount[i][j] = int_orders[j]
+                            int_provisions[i] = int_provisions[i] - int_orders[j]
+                            int_orders[j] = 0
                     else:
-                        initial_cost[i-1][j-1] = 0
-        return(initial_cost)
+                        self.__sent_amount[i][j] = 0
+                    j += 1
 
     def penalties_computation(self):
         penalties_order = []
@@ -233,7 +231,6 @@ class TransportationProposal():
                     penalties_order.append((penalty,list_cost[0][0],j))
                 elif(len(list_cost) == 1):
                     self.__sent_amount[list_cost[0][0]][j]= int_orders[j]
-                    print('added', int_orders[j])
                     self.__orders[j] = 0
                     int_orders[j] = 0
 
@@ -252,7 +249,6 @@ class TransportationProposal():
                     penalties_provisions.append((penalty, j,list_cost[0][0]))
                 elif(len(list_cost) == 1):
                     self.__sent_amount[j][list_cost[0][0]]= int_provisions[j]
-                    print('added', int_provisions[j])
                     self.__provisions[j] = 0
                     int_provisions[j] = 0
 
@@ -268,8 +264,6 @@ class TransportationProposal():
             # computation of the penalties
             col_penalties, row_penalties = self.penalties_computation()
 
-            print(col_penalties)
-            print(row_penalties)
 
             # No more valid moves left
             if not row_penalties and not col_penalties:
@@ -315,13 +309,11 @@ class TransportationProposal():
                 best_penalty = select_best_move(col_penalties)
             else:
                 break
-            print(best_penalty)
             # Make the assignment based on the best penalty
             if best_penalty:
                 _, i, j = best_penalty
                 amount = min(int_provisions[i], int_orders[j])
                 self.__sent_amount[i][j] += amount
-                print('added amount', amount)
                 int_provisions[i] -= amount
                 int_orders[j] -= amount
                 # Update the string lists after each transaction
