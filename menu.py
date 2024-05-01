@@ -1,5 +1,6 @@
 import utils
-from or_logics import Problem
+from or_logics import Problem, TransportationProposal
+
 
 #Function that checks the user input for problem selection.
 def check_problem_input(user_input) :
@@ -32,4 +33,19 @@ def menu() :
     pb.print_cost_matrix()
     pb.print_transportation_proposals()
 
-   
+    Tp = TransportationProposal(pb)
+    #Tp.northwest_initialize()
+    Tp.print_transportation_proposal()
+    Tp.baas_hammer_initialization2()
+    Tp.print_transportation_proposal()
+    print(Tp.transportation_cost())
+
+
+    #Show the associated graph
+    graph_name = "Graph " + problem_choice
+    graph = Graph(name=graph_name, client_nb=pb.client_n, provider_nb=pb.provider_n, weight = Tp.get_sent_amount())
+    graph.print_graph()
+
+    graph.unconnected()
+    graph.check_cycle()
+
