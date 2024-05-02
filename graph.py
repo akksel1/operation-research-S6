@@ -1,9 +1,10 @@
 import networkx as nx
 import matplotlib.pyplot as plt
-import time
 import utils
+
+
 class Graph():
-    def __init__(self, name, provider_nb, client_nb, weight) :
+    def __init__(self, name, provider_nb, client_nb, weight):
 
         # graph initialization
         self._graph = nx.Graph()
@@ -12,22 +13,24 @@ class Graph():
         self._name = name
 
         # provider number
-        self._provider_nb=provider_nb
+        self._provider_nb = provider_nb
 
         # client number
-        self._client_nb=client_nb
+        self._client_nb = client_nb
 
         # transportation proposal
-        self._weight=weight
+        self._weight = weight
 
         # check cycle boolean
         self._cycle = False
+
+        self._cost = []
 
     def build_graph(self):
 
         # Step 1 - Add the nodes to the graph
         # Creating provider nodes
-        for i in range(1,self._provider_nb+1):
+        for i in range(1, self._provider_nb + 1):
             node_name = "P" + str(i)
             self._graph.add_node(node_name)
 
@@ -39,11 +42,10 @@ class Graph():
         # Step 2 - Connect the nodes between each others & Add weight
         for i in range(self._provider_nb):
             for j in range(self._client_nb):
-                if(self._weight[i][j])!=0:
-                    node1= "P" + str(i+1)
-                    node2= "C" + str(j+1)
-                    self._graph.add_edge(node1,node2,weight=self._weight[i][j])
-
+                if (self._weight[i][j]) != 0:
+                    node1 = "P" + str(i + 1)
+                    node2 = "C" + str(j + 1)
+                    self._graph.add_edge(node1, node2, weight=self._weight[i][j])
 
     def print_graph(self):
 
@@ -84,112 +86,93 @@ class Graph():
 
         plt.show()
 
-    def breadth_first_algo(self,starting_node):
+    def breadth_first_algo(self, starting_node, display):
+        if display:
+            print("\n\n\t---- Starting Breadth First Search (BFS) ---\n\n")
+            print("\t** Initial Node: ", starting_node, " **")
 
-        print("\n\n\t---- Starting Breadth First Search (BFS) ---\n\n ")
-        print("\t** Initial Node: ",starting_node," **")
-        queue = []
-        visited = []
+        # Initialize queue and visited set
+        queue = [starting_node]
+        visited = set([starting_node])
 
-        # Parent dictionary to store the parent of each node
-        # Data Structure : {'P1': [], 'P2': [], 'P3': [], 'C1': [], 'C2': [], 'C3': [], 'C4': []}
+        # Parent dictionary
         parent = {}
+        for i in range(1, self._provider_nb + 1):
+            parent["P" + str(i)] = None
+        for i in range(1, self._client_nb + 1):
+            parent["C" + str(i)] = None
 
-        # Initialization of parent
-        for i in range(1, self._provider_nb+1):
-            parent["P"+str(i)]=""
-        for i in range(1, self._client_nb+1):
-            parent["C"+str(i)]=""
-
-        # Initialization of the BFS
-        current_node = starting_node
-        next_node = ""
-        previous_node = starting_node
-        queue.append(current_node)
-        stop = False
-        cpt = 0
+        parent[starting_node] = None
         self._cycle = False
+        cpt = 0
 
+        while queue:
+            current_node = queue.pop(0)
+            cpt += 1
 
-        while stop is not True:
-            cpt+=1
+            if display:
+                print("\n\t***** Iteration #", cpt, "*****")
+                print("\tCurrent node: ", current_node)
+                print("\tVisited Nodes:", visited)
+                print("\tParent Mapping:", parent)
 
-            # Check cycle
-            print("\n\t***** Iteration #",cpt,"*****")
-            print("\tCurrent node: ", current_node)
-            if current_node in visited and parent[previous_node] != current_node:
-                self._cycle = True
-                stop = True
-
-            # Step 1 - Store the neighbours in the queue
+            # Step 1 - Iterate over neighbors of the current node
             neighbors = list(self._graph.neighbors(current_node))
+            for neighbor in neighbors:
+                # If neighbor is not visited, add to queue and set parent
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    queue.append(neighbor)
+                    parent[neighbor] = current_node
+                # If the neighbor is visited and is not the parent of the current node
+                elif parent[current_node] != neighbor:
+                    self._cycle = True
+                    if display:
+                        print("\n\t***** CYCLE DETECTED *****")
+                        print("\tCycle Involves:", current_node, neighbor)
+                    return visited, parent
 
-            for i in range (0,len(neighbors)):
-                if neighbors[i] not in queue and neighbors[i] not in parent.values():
-                    queue.insert(0,neighbors[i])
-
-            print("\tQueue:",queue)
-
-            # Step 2 - Delete current node of the queue (which is the last one)
-            print("\tRemoved current node"+current_node)
-            queue.pop()
-            print("\tQueue updated:",queue)
-
-            # Step 3 -  Next node <=> last element of the queue
-            if len(queue) != 0 :
-                next_node = queue[-1]
-                print("\tNext node:",next_node)
-
-            # Step 4 - Store the current node to the parent
-            if next_node != "":
-                parent[next_node] = current_node
-
-            visited.append(current_node)
-            # Step 5 - Move to the next node
-            if next_node == "" :
-                stop = True
-            else:
-                current_node = next_node
-                next_node=""
-                previous_node = visited[-1]
+            if display:
+                print("\tQueue:", queue)
 
         return visited, parent
 
-    def unconnected(self):
+    #Function that returns TRUE if a graph is unconnected, FALSE if connected
+    def unconnected(self,display):
         print("\n\n\t---- Starting unconnected algorithm ---\n\n ")
         subgraphs = []
         all_visited = []
         starting_node = "P1"
 
         # Run BFS from the starting node to find the first subgraph
-        visited, parent = self.breadth_first_algo(starting_node)
+        visited, parent = self.breadth_first_algo(starting_node, display)
         all_visited.extend(visited)
         subgraphs.append(set(visited))
 
         # Check for other subgraphs
         connect = all(key in visited for key in parent)
         if not connect:
-            #Step 1 - Get the node that is disconnected
+            # Step 1 - Get the node that is disconnected
             unconnected_node = utils.unvisited(visited, list(parent.keys()))
 
             while unconnected_node:
-                #Step 2 - Rerun the BFS algo
-                visited, parent = self.breadth_first_algo(unconnected_node)
+                # Step 2 - Rerun the BFS algo
+                visited, parent = self.breadth_first_algo(unconnected_node, display)
 
-                #Step 3 - Add the new visited nodes to the all visited list
+                # Step 3 - Add the new visited nodes to the all visited list
                 all_visited.extend(visited)
 
-                #Step 4 - Store the subgraph
+                # Step 4 - Store the subgraph
                 subgraphs.append(set(visited))
 
-                #Step 5 - Check if there are other subgraphs
+                # Step 5 - Check if there are other subgraphs
                 unconnected_node = utils.unvisited(all_visited, list(parent.keys()))
 
         if len(subgraphs) > 1:
             print("\n\t/!\ GRAPH UNCONNECTED /!\ ")
-            print("\tIDENIFIED",len(subgraphs),"SUBGRAPHS:")
+            print("\tIDENIFIED", len(subgraphs), "SUBGRAPHS:")
             for i in range(len(subgraphs)):
-                print("\t\t* SUBGRAPH #",i+1,": ",subgraphs[i])
+                print("\t\t* SUBGRAPH #", i + 1, ": ", subgraphs[i])
             color_map = plt.cm.get_cmap('tab10', len(subgraphs))
             pos = {}
             node_color = {}
@@ -220,20 +203,172 @@ class Graph():
             ax.set_title(f"All Subgraphs Visual Representation", fontsize=20, fontweight='bold')
             plt.get_current_fig_manager().set_window_title('All Subgraphs Visualization')
             plt.show()
+            return True
         else:
             print("\n\t--> GRAPH CONNECTED")
+            return False
+
+    #Function that extracts all subgraphs from an unconnected graph
+    def get_subgraphs(self):
+        all_visited = []
+        starting_node = "P1"
+        subgraphs = []
+
+        # Run BFS from the starting node to find the first subgraph
+        visited, parent = self.breadth_first_algo(starting_node, False)
+        all_visited.extend(visited)
+        subgraphs.append(set(visited))
+
+        # Check for other subgraphs
+        connect = all(key in visited for key in parent)
+        if not connect:
+            # Step 1 - Get the node that is disconnected
+            unconnected_node = utils.unvisited(visited, list(parent.keys()))
+
+            while unconnected_node:
+                # Step 2 - Rerun the BFS algo
+                visited, parent = self.breadth_first_algo(unconnected_node, False)
+
+                # Step 3 - Add the new visited nodes to the all visited list
+                all_visited.extend(visited)
+
+                # Step 4 - Store the subgraph
+                subgraphs.append(set(visited))
+
+                # Step 5 - Check if there are other subgraphs
+                unconnected_node = utils.unvisited(all_visited, list(parent.keys()))
+        return subgraphs
+
+    #Function that returns TRUE if a graph contains cycle, FALSE if not. Notice that this info is stored inside the object self._cycle
+    def check_cycle(self,display):
+        print("\n\n\t---- Starting cycle algorithm ---")
+
+        subgraphs = list(self.get_subgraphs())
+
+        for i in range(0, len(subgraphs)):
+            initial_node = list(subgraphs[i])[0]
+
+            # Step 1 - Perform BFS
+            print("\tPerforming BFS to detect any potential cycle...")
+            self.breadth_first_algo(initial_node, display)
+
+            # Step 2 - Return Result
+            if self._cycle is True:
+                print("\t/!\ CYCLE DETECTED /!\ ")
+                return self._cycle
+
+        print("\t--> NO CYCLE DETECTED")
+        return self._cycle
+
+    # Function that allows stepping stone on a degenerated graph by adding the right edge (min cost)
+    def degenerate_stepping_stone(self, cost_matrix, sent_amount):
+        if (self._cycle is True):
+            print("Cannot proceed degenerate stepping stone method when a cycle appears")
+            return
+
+        # Compute the # of edge that needs to be added
+        nb_edge = self._graph.number_of_edges()
+        nb_node = self._graph.number_of_nodes()
+
+        nb_edge_need = nb_node - nb_edge - 1
+
+        if (nb_edge_need == 0):
+            print("\nThe graph is already connected")
+            return
+
+        added_edge_cpt = 0
+
+        # Converting cost matrix in int
+        for i in range(self._provider_nb):
+            for j in range(self._client_nb):
+                cost_matrix[i][j] = int(cost_matrix[i][j])
+
+        # Initialize create_cycle matrix
+        # -> if 0 : the connection does not  create a cycle
+        # -> if 1 : the connection creates a cycle
+        create_cycle = []
+        for i in range(self._provider_nb):
+            a = []
+            for j in range(self._client_nb):
+                a.append(0)
+            create_cycle.append(a)
 
 
-    # For checking cycle, we assume that the graph is already connected
-    def check_cycle(self):
-        print("\n\n\t---- Starting cycle algorithm ---\n\n ")
-        # Step 1 - Perform BFS
-        self.breadth_first_algo("P1")
+        # While we have not added all the edges needed, we continue to search for minimum and new connections
+        while added_edge_cpt < nb_edge_need:
 
-        # Step 2 - Return Result
-        if self._cycle is True:
-            print("\n\t/!\ CYCLE DETECTED /!\ ")
-            return self._cycle
-        else:
-            print("\n\t--> NO CYCLE DETECTED")
-            return self._cycle
+            #Put '-1' in cost matrix when the connection already exists
+            for i in range(self._provider_nb):
+                for j in range(self._client_nb):
+                    if sent_amount[i][j] !=0 and sent_amount[i][j] > 0 :
+                        cost_matrix[i][j] = -1
+
+            # Find the minimum among all others client & positive ! (if -1 it would meant that the edge is existing
+            # or it creates a cycle when added)
+
+            # Step 1 - Find the first postive value in matrix (to not take an aritrary value to find min)
+            found = False
+            # Coordinates of the minimum
+            coordinates = []
+            while(found is False):
+                i=0
+                while i < self._provider_nb and found is False:
+                    j=0
+                    while j < self._client_nb and found is False:
+                        if sent_amount[i][j] == 0 and cost_matrix[i][j]>0:
+                            found = True
+                            minimum = cost_matrix[i][j]
+                            coordinates.append(i)
+                            coordinates.append(j)
+                        j+=1
+                    i+=1
+
+            # Step 2 - minimum positive algo
+            for i in range(self._provider_nb):
+                for j in range(self._client_nb):
+                    if minimum > cost_matrix[i][j] and cost_matrix[i][j] > 0:
+                        minimum = cost_matrix[i][j]
+                        coordinates.append(i)
+                        coordinates.append(j)
+
+
+            # Step 3 - try to connect
+            node_provider = "P"+str(coordinates[0]+1)
+            node_customer = "C"+str(coordinates[1]+1)
+            self._graph.add_edge(node_provider,node_customer,weight=sent_amount[coordinates[0]][coordinates[1]])
+
+
+            # Step 4 - check cycle
+            self.check_cycle(False)
+
+            # If a cycle has been detected -> Del the new edge and put -1 in cost matrix
+            if self._cycle is True :
+                cost_matrix[coordinates[0]][coordinates[1]] = -1
+                coordinates=[]
+                self._graph.remove_edge(node_provider,node_customer)
+            else:
+                #We add the edge !
+                cost_matrix[coordinates[0]][coordinates[1]] = -1
+                added_edge_cpt +=1
+
+
+            self.print_graph()
+
+    #Function that returns True if a TP is non-degenerate
+    def check_non_degenerate(self):
+
+        #Check cycle
+        self.check_cycle(False)
+
+        # Compute the # of edge that needs to be added
+        nb_edge = self._graph.number_of_edges()
+        nb_node = self._graph.number_of_nodes()
+
+        nb_edge_need = nb_node - nb_edge - 1
+
+        if(nb_edge_need == 0 and self._cycle is False):
+            return True
+        return False
+
+
+

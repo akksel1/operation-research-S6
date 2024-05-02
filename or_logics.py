@@ -98,7 +98,10 @@ class Problem():
         
         self.__transpo.print_transportation_proposal()
 
-        
+    def get_cost_matrix(self):
+        return self.cost_matrix
+
+
 class TransportationProposal():
 
     def __init__(self, pb: Problem) :
@@ -329,4 +332,6 @@ class TransportationProposal():
 
         return total_cost
 
+    def get_sent_amount(self):
+        return self.__sent_amount
 
