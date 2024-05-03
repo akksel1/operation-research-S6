@@ -1,5 +1,6 @@
 from tabulate import tabulate
 import copy
+import graph
 
 #Class that will store a problem's data and related functions.
 class Problem():
@@ -114,6 +115,8 @@ class TransportationProposal():
         #Will store the amount of suplly sent each providers to each clients.
         self.__sent_amount = []
 
+        self.graph = None
+
         #Function executed to initialize data.
         self.__build()
     
@@ -124,7 +127,78 @@ class TransportationProposal():
             self.__sent_amount.append([])
             for client_n in range(self.__problem.client_n) :
                 self.__sent_amount[provider_n].append(0)
+        self.__update_graph()
+
+    def __update_graph(self):
+        name = "Graph " + self.__problem.problem_number
+        self.graph = graph.Graph(name, self.__problem.provider_n, self.__problem.client_n, self.__sent_amount)
     
+    def degenerate_stepping_stone(self):
+        self.graph.degenerate_stepping_stone(copy.deepcopy(self.__problem.cost_matrix), self.__sent_amount)
+
+    def stepping_stone(self) :
+        transportation_graph = self.graph.get_graph()
+        client_value = {}
+        provider_value = {}
+        potential_cost_matrix = []
+        marginal_costs_matrix = []
+        for edge in transportation_graph :
+            provider = edge[0]
+            client = edge[1]
+            if not provider in provider_value :
+                provider_value.update({provider:None})
+            if not client in client_value :
+                client_value.update({client:None})
+
+        def compute_equations():
+            #initialize E(p1)=0
+            initial_edge = transportation_graph[0]
+            initial_provider = initial_edge[0]
+            provider_value[initial_provider] = 0
+            for edge in transportation_graph :
+                provider = edge[0]
+                client = edge[1]
+                client_index = int(client[1:len(client)])-1
+                provider_index = int(provider[1:len(provider)])-1
+                cost = int(self.__problem.cost_matrix[provider_index][client_index])
+                
+                if client_value[client] == None :
+                    client_value[client] = -cost-provider_value[provider]
+                
+                else :
+                    provider_value[provider] = cost+client_value[client]
+
+
+        def compute_potential_costs() :
+            for provider in provider_value :
+                row = []
+                for client in client_value :
+                    row.append(provider_value[provider]-client_value[client])
+                potential_cost_matrix.append(row)
+
+        def compute_marginal_costs():
+            for provider_index in range(len(potential_cost_matrix)) :
+                row = []
+                for client_index in range(len(potential_cost_matrix[provider_index])) :
+                    row.append(int(self.__problem.cost_matrix[provider_index][client_index]) - potential_cost_matrix[provider_index][client_index])
+                marginal_costs_matrix.append(row)
+
+
+        compute_equations()
+        #Sorting the dicts.
+        client_value = dict(sorted(client_value.items()))
+        provider_value = dict(sorted(provider_value.items()))
+        print(client_value, provider_value)
+        compute_potential_costs()
+        print("Potential costs :")
+        print(potential_cost_matrix)
+        compute_marginal_costs()
+        print("Marginal Costs")
+        print(marginal_costs_matrix)
+
+
+
+
     #Prints the Transportation proposal table
     def print_transportation_proposal(self) :
 
@@ -187,6 +261,7 @@ class TransportationProposal():
 
         #Prints the table in the terminal.
         print(tabulate(table_content, headers=table_header, tablefmt="simple_grid"))
+
 
     def northwest_initialize(self):
         print(self.__sent_amount)

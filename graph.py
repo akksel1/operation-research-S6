@@ -47,6 +47,10 @@ class Graph():
                     node2 = "C" + str(j + 1)
                     self._graph.add_edge(node1, node2, weight=self._weight[i][j])
 
+    def get_graph(self) :
+        edges_with_weights = list(self._graph.edges(data='weight', default=1))
+        return edges_with_weights
+    
     def print_graph(self):
 
         # Build the graph
