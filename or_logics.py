@@ -1,5 +1,6 @@
 from tabulate import tabulate
 import copy
+import graph
 
 #Class that will store a problem's data and related functions.
 class Problem():
@@ -114,6 +115,8 @@ class TransportationProposal():
         #Will store the amount of suplly sent each providers to each clients.
         self.__sent_amount = []
 
+        self.graph = None
+
         #Function executed to initialize data.
         self.__build()
     
@@ -124,7 +127,25 @@ class TransportationProposal():
             self.__sent_amount.append([])
             for client_n in range(self.__problem.client_n) :
                 self.__sent_amount[provider_n].append(0)
+        self.__update_graph()
+
+    def __update_graph(self):
+        name = "Graph " + self.__problem.problem_number
+        self.graph = graph.Graph(name, self.__problem.provider_n, self.__problem.client_n, self.__sent_amount)
     
+    def degenerate_stepping_stone(self):
+        self.graph.degenerate_stepping_stone(self.__problem.cost_matrix, self.__sent_amount)
+
+    def stepping_stone(self) :
+        transportation_graph = self.graph.get_graph()
+        client_value = []
+        provider_value = []
+        def compute_equations():
+            #initialize E(pn)=0
+            provider_value.append(0)
+
+
+
     #Prints the Transportation proposal table
     def print_transportation_proposal(self) :
 
@@ -187,6 +208,7 @@ class TransportationProposal():
 
         #Prints the table in the terminal.
         print(tabulate(table_content, headers=table_header, tablefmt="simple_grid"))
+
 
     def northwest_initialize(self):
         print(self.__sent_amount)

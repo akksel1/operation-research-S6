@@ -33,7 +33,6 @@ def menu() :
     #Initialize this data as problem.
     pb = Problem(raw_problem_data, problem_choice)
     pb.print_cost_matrix()
-    pb.print_transportation_proposals()
 
     Tp = TransportationProposal(pb)
     #Tp.northwest_initialize()
@@ -45,20 +44,20 @@ def menu() :
 
 
     #Show the associated graph
-    graph_name = "Graph " + problem_choice
-    graph = Graph.Graph(name=graph_name, client_nb=pb.client_n, provider_nb=pb.provider_n, weight = Tp.get_sent_amount())
-    graph.print_graph()
+    Tp.graph.print_graph()
 
     # Parameter BOOL -> Display (TRUE) or not (FALSE) details in console
-    graph.unconnected(True)
+    Tp.graph.unconnected(True)
 
     # Parameter BOOL -> Display (TRUE) or not (FALSE) details in console
-    graph.check_cycle(False)
+    Tp.graph.check_cycle(False)
 
-    if graph.check_non_degenerate() is False:
+    if Tp.graph.check_non_degenerate() is False:
         print("\n\n\t/!\ Transport Proposal is degenerated /!\ ")
         print("\tStarting degenerate stepping stone algorithm ...")
-        graph.degenerate_stepping_stone(pb.get_cost_matrix(), Tp.get_sent_amount())
+        Tp.degenerate_stepping_stone()
     else:
         print("--> NON DEGENERATED TRANSPORT PROPOSAL")
+
+    print(Tp.graph.get_graph())
 
