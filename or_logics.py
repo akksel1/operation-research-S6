@@ -117,6 +117,11 @@ class TransportationProposal():
 
         self.graph = None
 
+        self.potential_cost_matrix = []
+
+        self.marginal_costs_matrix  = []
+
+
         #Function executed to initialize data.
         self.__build()
     
@@ -125,13 +130,43 @@ class TransportationProposal():
         #When initialized all sent amounts are 0.
         for provider_n in range(self.__problem.provider_n) :
             self.__sent_amount.append([])
+            self.potential_cost_matrix.append([])
+            self.marginal_costs_matrix.append([])
             for client_n in range(self.__problem.client_n) :
                 self.__sent_amount[provider_n].append(0)
+                self.potential_cost_matrix[provider_n].append(0)
+                self.marginal_costs_matrix[provider_n].append(0)
         self.__update_graph()
 
     def __update_graph(self):
         name = "Graph " + self.__problem.problem_number
         self.graph = graph.Graph(name, self.__problem.provider_n, self.__problem.client_n, self.__sent_amount)
+
+    def __print_matrix(self, matrix, display_name) :
+        print(display_name)
+        table_header = []
+        table_content = []
+
+        #Top left corner contains the problem's number.
+        table_header.append(self.__problem.problem_number)
+
+        #Adding each client to the header.
+        for client_n in range(self.__problem.client_n) :
+            table_header.append(f"Client {client_n+1}")
+
+        for provider_n in range(len(matrix)) :
+            row = matrix[provider_n].copy()
+            row.insert(0, f"Provider {provider_n+1}")
+            table_content.append(row)
+
+        print(tabulate(table_content, headers=table_header, tablefmt="simple_grid"))
+
+    def print_potential_costs_matrix(self):
+        self.__print_matrix(self.potential_cost_matrix, "\nPotential Costs matrix :\n")
+
+    def print_marginal_costs_matrix(self):
+        self.__print_matrix(self.marginal_costs_matrix, "\nMarginal Costs matrix :\n")
+        
     
     def degenerate_stepping_stone(self):
         self.graph.degenerate_stepping_stone(copy.deepcopy(self.__problem.cost_matrix), self.__sent_amount)
@@ -141,8 +176,6 @@ class TransportationProposal():
         print(transportation_graph)
         client_value = {}
         provider_value = {}
-        potential_cost_matrix = []
-        marginal_costs_matrix = []
         for edge in transportation_graph :
             provider = edge[0]
             client = edge[1]
@@ -176,18 +209,21 @@ class TransportationProposal():
                 compute_equations()
 
         def compute_potential_costs() :
+            provider_index = 0
             for provider in provider_value :
-                row = []
+                client_index = 0
                 for client in client_value :
-                    row.append(provider_value[provider]-client_value[client])
-                potential_cost_matrix.append(row)
+                    cost = provider_value[provider]-client_value[client]
+                    self.potential_cost_matrix[provider_index][client_index] = cost
+                    client_index += 1
+                provider_index += 1
 
         def compute_marginal_costs():
-            for provider_index in range(len(potential_cost_matrix)) :
-                row = []
-                for client_index in range(len(potential_cost_matrix[provider_index])) :
-                    row.append(int(self.__problem.cost_matrix[provider_index][client_index]) - potential_cost_matrix[provider_index][client_index])
-                marginal_costs_matrix.append(row)
+            for provider_index in range(len(self.potential_cost_matrix)) :
+                for client_index in range(len(self.potential_cost_matrix[provider_index])) :
+                    cost = int(self.__problem.cost_matrix[provider_index][client_index]) - self.potential_cost_matrix[provider_index][client_index]
+                    self.marginal_costs_matrix[provider_index][client_index] = cost
+                
 
 
         compute_equations()
@@ -196,11 +232,12 @@ class TransportationProposal():
         provider_value = dict(sorted(provider_value.items()))
         print(client_value, provider_value)
         compute_potential_costs()
-        print("Potential costs :")
-        print(potential_cost_matrix)
+       
+        self.print_potential_costs_matrix()
+
         compute_marginal_costs()
-        print("Marginal Costs")
-        print(marginal_costs_matrix)
+        
+        self.print_marginal_costs_matrix()
 
 
 
