@@ -138,6 +138,7 @@ class TransportationProposal():
 
     def stepping_stone(self) :
         transportation_graph = self.graph.get_graph()
+        print(transportation_graph)
         client_value = {}
         provider_value = {}
         potential_cost_matrix = []
@@ -152,6 +153,7 @@ class TransportationProposal():
 
         def compute_equations():
             #initialize E(p1)=0
+            repass = False
             initial_edge = transportation_graph[0]
             initial_provider = initial_edge[0]
             provider_value[initial_provider] = 0
@@ -162,12 +164,16 @@ class TransportationProposal():
                 provider_index = int(provider[1:len(provider)])-1
                 cost = int(self.__problem.cost_matrix[provider_index][client_index])
                 
-                if client_value[client] == None :
-                    client_value[client] = -cost-provider_value[provider]
-                
+                if client_value[client] == None and provider_value[provider] == None : 
+                    repass = True
                 else :
-                    provider_value[provider] = cost+client_value[client]
-
+                    if client_value[client] == None :
+                        client_value[client] = -cost-provider_value[provider]
+                    
+                    else :
+                        provider_value[provider] = cost+client_value[client]
+            if repass :
+                compute_equations()
 
         def compute_potential_costs() :
             for provider in provider_value :
