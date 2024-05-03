@@ -1,5 +1,8 @@
 import utils
-from or_logics import Problem
+from or_logics import Problem, TransportationProposal
+import graph as Graph
+
+
 
 #Function that checks the user input for problem selection.
 def check_problem_input(user_input) :
@@ -32,4 +35,30 @@ def menu() :
     pb.print_cost_matrix()
     pb.print_transportation_proposals()
 
-   
+    Tp = TransportationProposal(pb)
+    #Tp.northwest_initialize()
+    Tp.print_transportation_proposal()
+    Tp.baas_hammer_initialization2()
+    Tp.print_transportation_proposal()
+    print(Tp.transportation_cost())
+
+
+
+    #Show the associated graph
+    graph_name = "Graph " + problem_choice
+    graph = Graph.Graph(name=graph_name, client_nb=pb.client_n, provider_nb=pb.provider_n, weight = Tp.get_sent_amount())
+    graph.print_graph()
+
+    # Parameter BOOL -> Display (TRUE) or not (FALSE) details in console
+    graph.unconnected(True)
+
+    # Parameter BOOL -> Display (TRUE) or not (FALSE) details in console
+    graph.check_cycle(False)
+
+    if graph.check_non_degenerate() is False:
+        print("\n\n\t/!\ Transport Proposal is degenerated /!\ ")
+        print("\tStarting degenerate stepping stone algorithm ...")
+        graph.degenerate_stepping_stone(pb.get_cost_matrix(), Tp.get_sent_amount())
+    else:
+        print("--> NON DEGENERATED TRANSPORT PROPOSAL")
+
