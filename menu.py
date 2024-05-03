@@ -60,4 +60,5 @@ def menu() :
         print("--> NON DEGENERATED TRANSPORT PROPOSAL")
 
     print(Tp.graph.get_graph())
+    Tp.stepping_stone()
 
