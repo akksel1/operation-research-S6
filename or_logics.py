@@ -112,7 +112,8 @@ class TransportationProposal():
 
         self.__provisions = copy.deepcopy(pb.provisions)
         self.__orders = copy.deepcopy(pb.orders)
-        #Will store the amount of suplly sent each providers to each clients.
+
+        #Will store the amount of suply sent each providers to each clients.
         self.__sent_amount = []
 
         self.graph = None
@@ -173,7 +174,7 @@ class TransportationProposal():
 
     def stepping_stone(self) :
         transportation_graph = self.graph.get_graph()
-        print(transportation_graph)
+        #print(transportation_graph)
         client_value = {}
         provider_value = {}
         for edge in transportation_graph :
@@ -189,8 +190,8 @@ class TransportationProposal():
             repass = False
             initial_edge = transportation_graph[0]
             initial_provider = initial_edge[0]
-            provider_value[initial_provider] = 0
             for edge in transportation_graph :
+                provider_value[initial_provider] = 0
                 provider = edge[0]
                 client = edge[1]
                 client_index = int(client[1:len(client)])-1
@@ -201,7 +202,7 @@ class TransportationProposal():
                     repass = True
                 else :
                     if client_value[client] == None :
-                        client_value[client] = -cost-provider_value[provider]
+                        client_value[client] = -cost+provider_value[provider]
                     
                     else :
                         provider_value[provider] = cost+client_value[client]
@@ -223,21 +224,114 @@ class TransportationProposal():
                 for client_index in range(len(self.potential_cost_matrix[provider_index])) :
                     cost = int(self.__problem.cost_matrix[provider_index][client_index]) - self.potential_cost_matrix[provider_index][client_index]
                     self.marginal_costs_matrix[provider_index][client_index] = cost
-                
 
+        def max_transportation(coordinates, cycle) :
+            def divide_chunks(l, n): 
+                for i in range(0, len(l), n):  
+                    yield l[i:i + n] 
+
+            couples = list(divide_chunks(cycle, 2))
+
+            provider_to_max = coordinates[0]
+            client_to_max = coordinates[1]
+
+            amount_to_add = 0
+            
+            max_supply = int(self.__problem.provisions[provider_to_max])
+            max_order = int(self.__problem.orders[client_to_max])
+
+            if max_supply < max_order :
+                amount_to_add = max_supply
+            
+            else :
+                amount_to_add = max_order
+
+            print(f"Got to max P{provider_to_max+1} and C{client_to_max+1} with value {amount_to_add}.\nMax supply = {max_supply}, Max order = {max_order}")
+
+            self.__sent_amount[provider_to_max][client_to_max] = amount_to_add
+
+            print("Maxed value")
+            self.print_transportation_proposal()
+
+                
+            
+
+            print("Adjusted transportation along the cycle:")
+            self.print_transportation_proposal()
+            """correct = False 
+
+            while not correct :
+                for provider_index in range(len(self.__sent_amount)) :
+                    current_provisions = 0
+
+                    for provision in self.__sent_amount[provider_index] :
+                        current_provisions += int(provision)
+
+                    for client_index in range(len(self.__sent_amount[provider_index])) :
+                        current_orders = 0
+                        for provider in self.__sent_amount :
+                            current_orders += int(provider[client_index])"""
+                        
+                        
+
+                    
+                    
+            """if not provider_index == provider_to_max and client_index == client_to_max and self.__sent_amount[provider_index][client_index] > 0:
+
+                        if current_orders > max_order :
+                            order_diff = current_orders - max_order
+                            print("Order difference =", order_diff)
+                        
+                        self.__sent_amount[provider_index][client_index] -= order_diff"""
+            
+            print("New transportation")
+            self.print_transportation_proposal()
+                        
+                       
+
+            self.print_transportation_proposal()
+
+
+            
+
+
+        def check_negative_mc() :
+            max_neg = 0
+            coordinates = []
+
+            for provider_index in range(len(self.marginal_costs_matrix)) :
+                for client_index in range(len(self.marginal_costs_matrix[provider_index])):
+                    if self.marginal_costs_matrix[provider_index][client_index] <= max_neg :
+                        max_neg = self.marginal_costs_matrix[provider_index][client_index] 
+                        coordinates = [provider_index, client_index]
+            
+            if len(coordinates) > 0 :
+                print(f"Negative value ({max_neg}) found at P{coordinates[0]+1}, C{coordinates[1]+1}")
+                print("Adding it to the graph.")
+                self.graph.add_edge(f"P{coordinates[0]+1}", f"C{coordinates[1]+1}")
+                cycle = self.graph.get_cycle()[0]
+                cycle.append(cycle[0])
+                print("Resultant cycle :", cycle)
+                max_transportation(coordinates, cycle)
 
         compute_equations()
         #Sorting the dicts.
         client_value = dict(sorted(client_value.items()))
         provider_value = dict(sorted(provider_value.items()))
-        print(client_value, provider_value)
+        #print("\nClient values :",client_value, "\nProvider values :",provider_value)
         compute_potential_costs()
        
         self.print_potential_costs_matrix()
 
         compute_marginal_costs()
         
+        print("Checking negative values in Marginal cost matrix")
+        check_negative_mc()
+
         self.print_marginal_costs_matrix()
+
+
+
 
 
 
