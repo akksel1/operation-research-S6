@@ -51,6 +51,12 @@ class Graph():
         edges_with_weights = list(self._graph.edges(data='weight', default=1))
         return edges_with_weights
     
+    def add_edge(self, node_provider, node_customer):
+        self._graph.add_edge(node_provider,node_customer,weight=0)
+
+    def get_cycle(self) :
+        return list(nx.simple_cycles(self._graph))
+    
     def print_graph(self):
 
         # Build the graph
@@ -206,7 +212,7 @@ class Graph():
             nx.draw_networkx_edge_labels(self._graph, pos, edge_labels=edge_labels)
             ax.set_title(f"All Subgraphs Visual Representation", fontsize=20, fontweight='bold')
             plt.get_current_fig_manager().set_window_title('All Subgraphs Visualization')
-            plt.show()
+            #plt.show()
             return True
         else:
             print("\n\t--> GRAPH CONNECTED")
@@ -356,7 +362,7 @@ class Graph():
                 added_edge_cpt +=1
 
 
-            self.print_graph()
+            #self.print_graph()
 
     #Function that returns True if a TP is non-degenerate
     def check_non_degenerate(self):
