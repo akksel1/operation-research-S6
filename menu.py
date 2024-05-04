@@ -35,15 +35,11 @@ def menu() :
     pb.print_cost_matrix()
 
     Tp = TransportationProposal(pb)
-    #Tp.northwest_initialize()
+    Tp.northwest_initialize()
+    #Tp.baas_hammer_initialization()
     Tp.print_transportation_proposal()
-    Tp.baas_hammer_initialization2()
-    Tp.print_transportation_proposal()
-    print(Tp.transportation_cost())
-
-
-
-    #Show the associated graph
+    Tp.transportation_cost()
+   #Show the associated graph
     Tp.graph.print_graph()
 
     # Parameter BOOL -> Display (TRUE) or not (FALSE) details in console

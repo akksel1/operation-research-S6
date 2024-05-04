@@ -468,7 +468,7 @@ class TransportationProposal():
 
         return penalties_order, penalties_provisions
 
-    def baas_hammer_initialization2(self):
+    def balas_hammer_initialization2(self):
         # convert strings to integers for provisions  list and orders list
         int_provisions = [int(x) for x in self.__provisions]
         int_orders = [int(x) for x in self.__orders]
