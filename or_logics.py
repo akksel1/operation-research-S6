@@ -112,10 +112,16 @@ class TransportationProposal():
 
         self.__provisions = copy.deepcopy(pb.provisions)
         self.__orders = copy.deepcopy(pb.orders)
-        #Will store the amount of suplly sent each providers to each clients.
+
+        #Will store the amount of suply sent each providers to each clients.
         self.__sent_amount = []
 
         self.graph = None
+
+        self.potential_cost_matrix = []
+
+        self.marginal_costs_matrix  = []
+
 
         #Function executed to initialize data.
         self.__build()
@@ -125,23 +131,52 @@ class TransportationProposal():
         #When initialized all sent amounts are 0.
         for provider_n in range(self.__problem.provider_n) :
             self.__sent_amount.append([])
+            self.potential_cost_matrix.append([])
+            self.marginal_costs_matrix.append([])
             for client_n in range(self.__problem.client_n) :
                 self.__sent_amount[provider_n].append(0)
+                self.potential_cost_matrix[provider_n].append(0)
+                self.marginal_costs_matrix[provider_n].append(0)
         self.__update_graph()
 
     def __update_graph(self):
         name = "Graph " + self.__problem.problem_number
         self.graph = graph.Graph(name, self.__problem.provider_n, self.__problem.client_n, self.__sent_amount)
+
+    def __print_matrix(self, matrix, display_name) :
+        print(display_name)
+        table_header = []
+        table_content = []
+
+        #Top left corner contains the problem's number.
+        table_header.append(self.__problem.problem_number)
+
+        #Adding each client to the header.
+        for client_n in range(self.__problem.client_n) :
+            table_header.append(f"Client {client_n+1}")
+
+        for provider_n in range(len(matrix)) :
+            row = matrix[provider_n].copy()
+            row.insert(0, f"Provider {provider_n+1}")
+            table_content.append(row)
+
+        print(tabulate(table_content, headers=table_header, tablefmt="simple_grid"))
+
+    def print_potential_costs_matrix(self):
+        self.__print_matrix(self.potential_cost_matrix, "\nPotential Costs matrix :\n")
+
+    def print_marginal_costs_matrix(self):
+        self.__print_matrix(self.marginal_costs_matrix, "\nMarginal Costs matrix :\n")
+        
     
     def degenerate_stepping_stone(self):
         self.graph.degenerate_stepping_stone(copy.deepcopy(self.__problem.cost_matrix), self.__sent_amount)
 
     def stepping_stone(self) :
         transportation_graph = self.graph.get_graph()
+        #print(transportation_graph)
         client_value = {}
         provider_value = {}
-        potential_cost_matrix = []
-        marginal_costs_matrix = []
         for edge in transportation_graph :
             provider = edge[0]
             client = edge[1]
@@ -152,49 +187,151 @@ class TransportationProposal():
 
         def compute_equations():
             #initialize E(p1)=0
+            repass = False
             initial_edge = transportation_graph[0]
             initial_provider = initial_edge[0]
-            provider_value[initial_provider] = 0
             for edge in transportation_graph :
+                provider_value[initial_provider] = 0
                 provider = edge[0]
                 client = edge[1]
                 client_index = int(client[1:len(client)])-1
                 provider_index = int(provider[1:len(provider)])-1
                 cost = int(self.__problem.cost_matrix[provider_index][client_index])
                 
-                if client_value[client] == None :
-                    client_value[client] = -cost-provider_value[provider]
-                
+                if client_value[client] == None and provider_value[provider] == None : 
+                    repass = True
                 else :
-                    provider_value[provider] = cost+client_value[client]
-
+                    if client_value[client] == None :
+                        client_value[client] = -cost+provider_value[provider]
+                    
+                    else :
+                        provider_value[provider] = cost+client_value[client]
+            if repass :
+                compute_equations()
 
         def compute_potential_costs() :
+            provider_index = 0
             for provider in provider_value :
-                row = []
+                client_index = 0
                 for client in client_value :
-                    row.append(provider_value[provider]-client_value[client])
-                potential_cost_matrix.append(row)
+                    cost = provider_value[provider]-client_value[client]
+                    self.potential_cost_matrix[provider_index][client_index] = cost
+                    client_index += 1
+                provider_index += 1
 
         def compute_marginal_costs():
-            for provider_index in range(len(potential_cost_matrix)) :
-                row = []
-                for client_index in range(len(potential_cost_matrix[provider_index])) :
-                    row.append(int(self.__problem.cost_matrix[provider_index][client_index]) - potential_cost_matrix[provider_index][client_index])
-                marginal_costs_matrix.append(row)
+            for provider_index in range(len(self.potential_cost_matrix)) :
+                for client_index in range(len(self.potential_cost_matrix[provider_index])) :
+                    cost = int(self.__problem.cost_matrix[provider_index][client_index]) - self.potential_cost_matrix[provider_index][client_index]
+                    self.marginal_costs_matrix[provider_index][client_index] = cost
 
+        def max_transportation(coordinates, cycle) :
+            def divide_chunks(l, n): 
+                for i in range(0, len(l), n):  
+                    yield l[i:i + n] 
+
+            couples = list(divide_chunks(cycle, 2))
+
+            provider_to_max = coordinates[0]
+            client_to_max = coordinates[1]
+
+            amount_to_add = 0
+            
+            max_supply = int(self.__problem.provisions[provider_to_max])
+            max_order = int(self.__problem.orders[client_to_max])
+
+            if max_supply < max_order :
+                amount_to_add = max_supply
+            
+            else :
+                amount_to_add = max_order
+
+            print(f"Got to max P{provider_to_max+1} and C{client_to_max+1} with value {amount_to_add}.\nMax supply = {max_supply}, Max order = {max_order}")
+
+            self.__sent_amount[provider_to_max][client_to_max] = amount_to_add
+
+            print("Maxed value")
+            self.print_transportation_proposal()
+
+                
+            
+
+            print("Adjusted transportation along the cycle:")
+            self.print_transportation_proposal()
+            """correct = False 
+
+            while not correct :
+                for provider_index in range(len(self.__sent_amount)) :
+                    current_provisions = 0
+
+                    for provision in self.__sent_amount[provider_index] :
+                        current_provisions += int(provision)
+
+                    for client_index in range(len(self.__sent_amount[provider_index])) :
+                        current_orders = 0
+                        for provider in self.__sent_amount :
+                            current_orders += int(provider[client_index])"""
+                        
+                        
+
+                    
+                    
+            """if not provider_index == provider_to_max and client_index == client_to_max and self.__sent_amount[provider_index][client_index] > 0:
+
+                        if current_orders > max_order :
+                            order_diff = current_orders - max_order
+                            print("Order difference =", order_diff)
+                        
+                        self.__sent_amount[provider_index][client_index] -= order_diff"""
+            
+            print("New transportation")
+            self.print_transportation_proposal()
+                        
+                       
+
+            self.print_transportation_proposal()
+
+
+            
+
+
+        def check_negative_mc() :
+            max_neg = 0
+            coordinates = []
+
+            for provider_index in range(len(self.marginal_costs_matrix)) :
+                for client_index in range(len(self.marginal_costs_matrix[provider_index])):
+                    if self.marginal_costs_matrix[provider_index][client_index] <= max_neg :
+                        max_neg = self.marginal_costs_matrix[provider_index][client_index] 
+                        coordinates = [provider_index, client_index]
+            
+            if len(coordinates) > 0 :
+                print(f"Negative value ({max_neg}) found at P{coordinates[0]+1}, C{coordinates[1]+1}")
+                print("Adding it to the graph.")
+                self.graph.add_edge(f"P{coordinates[0]+1}", f"C{coordinates[1]+1}")
+                cycle = self.graph.get_cycle()[0]
+                cycle.append(cycle[0])
+                print("Resultant cycle :", cycle)
+                max_transportation(coordinates, cycle)
 
         compute_equations()
         #Sorting the dicts.
         client_value = dict(sorted(client_value.items()))
         provider_value = dict(sorted(provider_value.items()))
-        print(client_value, provider_value)
+        #print("\nClient values :",client_value, "\nProvider values :",provider_value)
         compute_potential_costs()
-        print("Potential costs :")
-        print(potential_cost_matrix)
+       
+        self.print_potential_costs_matrix()
+
         compute_marginal_costs()
-        print("Marginal Costs")
-        print(marginal_costs_matrix)
+        
+        print("Checking negative values in Marginal cost matrix")
+        check_negative_mc()
+
+        self.print_marginal_costs_matrix()
+
+
+
 
 
 

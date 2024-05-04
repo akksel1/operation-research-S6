@@ -61,4 +61,6 @@ def menu() :
 
     print(Tp.graph.get_graph())
     Tp.stepping_stone()
+    #Show the associated graph
+    Tp.graph.print_graph()
 
