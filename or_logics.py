@@ -401,7 +401,6 @@ class TransportationProposal():
 
 
     def northwest_initialize(self):
-        print(self.__sent_amount)
         i = -1
         int_provisions = [int(x) for x in self.__provisions]
         int_orders = [int(x) for x in self.__orders]
@@ -542,7 +541,7 @@ class TransportationProposal():
             for j in range(0,len(self.__sent_amount[i])):
                 total_cost += int(self.__sent_amount[i][j]) * int(self.__problem.cost_matrix[i][j])
 
-        return total_cost
+        print("Transportation Cost = ", total_cost)
 
     def get_sent_amount(self):
         return self.__sent_amount
