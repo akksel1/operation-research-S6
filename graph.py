@@ -26,6 +26,7 @@ class Graph():
 
         self._cost = []
 
+
     def build_graph(self):
 
         # Step 1 - Add the nodes to the graph
@@ -59,9 +60,8 @@ class Graph():
     
     def print_graph(self):
 
-        # Build the graph
         self.build_graph()
-
+        
         # Create the plot interface
         fig, ax = plt.subplots(figsize=(10, 7))
 

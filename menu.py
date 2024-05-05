@@ -42,8 +42,6 @@ def menu() :
     print(Tp.transportation_cost())
 
 
-
-    #Show the associated graph
     Tp.graph.print_graph()
 
     # Parameter BOOL -> Display (TRUE) or not (FALSE) details in console
