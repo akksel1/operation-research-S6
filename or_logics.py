@@ -457,7 +457,6 @@ class TransportationProposal():
 
 
     def northwest_initialize(self):
-        print(self.__sent_amount)
         i = -1
         int_provisions = [int(x) for x in self.__provisions]
         int_orders = [int(x) for x in self.__orders]
@@ -525,7 +524,7 @@ class TransportationProposal():
 
         return penalties_order, penalties_provisions
 
-    def baas_hammer_initialization2(self):
+    def balas_hammer_initialization2(self):
         # convert strings to integers for provisions  list and orders list
         int_provisions = [int(x) for x in self.__provisions]
         int_orders = [int(x) for x in self.__orders]
@@ -598,7 +597,7 @@ class TransportationProposal():
             for j in range(0,len(self.__sent_amount[i])):
                 total_cost += int(self.__sent_amount[i][j]) * int(self.__problem.cost_matrix[i][j])
 
-        return total_cost
+        print("Transportation Cost = ", total_cost)
 
     def get_sent_amount(self):
         return self.__sent_amount
