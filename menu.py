@@ -58,6 +58,7 @@ def menu() :
            #Show the associated graph
             Tp.graph.print_graph()
 
+
             # Parameter BOOL -> Display (TRUE) or not (FALSE) details in console
             Tp.graph.unconnected(True)
 

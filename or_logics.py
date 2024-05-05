@@ -172,7 +172,8 @@ class TransportationProposal():
     def degenerate_stepping_stone(self):
         self.graph.degenerate_stepping_stone(copy.deepcopy(self.__problem.cost_matrix), self.__sent_amount)
 
-    def stepping_stone(self) :
+    def stepping_stone(self, iteration=1) :
+        print("\n\nStepping Stone iteration", iteration)
         transportation_graph = self.graph.get_graph()
         #print(transportation_graph)
         client_value = {}
@@ -226,77 +227,105 @@ class TransportationProposal():
                     self.marginal_costs_matrix[provider_index][client_index] = cost
 
         def max_transportation(coordinates, cycle) :
-            def divide_chunks(l, n): 
-                for i in range(0, len(l), n):  
-                    yield l[i:i + n] 
+            def get_couples() :
+                cycle.pop(-1)
+                couples = []
+                for i in range(len(cycle)) :
+                    if cycle[i][0] == "P" :
+                        couples.append([cycle[i], cycle[i-1]])
+                        if i < len(cycle)-1 :
+                            couples.append([cycle[i], cycle[i+1]])
+                return couples
+            
 
-            couples = list(divide_chunks(cycle, 2))
 
-            provider_to_max = coordinates[0]
-            client_to_max = coordinates[1]
+            self.graph.print_graph()
+            cycle_couples = get_couples()
 
-            amount_to_add = 0
+            print("Cycle Couples", cycle_couples)
+
+            provider_to_max, client_to_max = coordinates
+            provider_tag = f"P{provider_to_max+1}"
+            client_tag = f"C{client_to_max+1}"
+
+            max_row_values = 0
+            max_col_values = 0
+
+            target_tag = [f"P{provider_to_max+1}",f"C{client_to_max+1}"]
+
+            for cli_idx in range(len(self.__sent_amount[provider_to_max])) :
+                cli_tag = f"C{cli_idx+1}"
+                pro_tag = f"P{provider_to_max+1}"
+                if [pro_tag, cli_tag] in cycle_couples  and [pro_tag, cli_tag] != target_tag :
+                    print(pro_tag, cli_tag, "in cycle, updating max_row_val.")
+                    max_row_values += self.__sent_amount[provider_to_max][cli_idx]
+
+            for pro_idx in range(len(self.__sent_amount)):
+                cli_tag = f"C{client_to_max+1}"
+                pro_tag = f"P{pro_idx+1}"
+                if [pro_tag, cli_tag] in cycle_couples and [pro_tag, cli_tag] != target_tag :
+                    print(pro_tag, cli_tag, "in cycle, updating max_col_val.")
+                    max_col_values += self.__sent_amount[pro_idx][client_to_max]
+
+
+            print("Max col val", max_col_values)
+            print("Max row val", max_row_values)
             
             max_supply = int(self.__problem.provisions[provider_to_max])
             max_order = int(self.__problem.orders[client_to_max])
+            amount_to_add = min(max_supply, max_order, max_row_values, max_col_values)
+            if amount_to_add == 0 :
+                print("\nCannot maximize", target_tag, " transportation proposal already optimal.")
+                return False
+            print(f"Maxing {target_tag} with {amount_to_add}")
+            self.__sent_amount[provider_to_max][client_to_max] += amount_to_add
 
-            if max_supply < max_order :
-                amount_to_add = max_supply
-            
-            else :
-                amount_to_add = max_order
-
-            print(f"Got to max P{provider_to_max+1} and C{client_to_max+1} with value {amount_to_add}.\nMax supply = {max_supply}, Max order = {max_order}")
-
-            self.__sent_amount[provider_to_max][client_to_max] = amount_to_add
-
-            print("Maxed value")
-            self.print_transportation_proposal()
-
-                
             
 
-            print("Adjusted transportation along the cycle:")
-            self.print_transportation_proposal()
-            """correct = False 
 
-            while not correct :
-                for provider_index in range(len(self.__sent_amount)) :
-                    current_provisions = 0
+           
+            for index, couple in enumerate(cycle_couples):
+                if couple == [provider_tag, client_tag]:
+                    max_index = index
+                    break
+            else:
+                raise ValueError("Specified relation is not in the cycle couples.")
 
-                    for provision in self.__sent_amount[provider_index] :
-                        current_provisions += int(provision)
+           
+            before_couple = cycle_couples[max_index - 1] if max_index > 0 else cycle_couples[-1]
+            forward_couple = cycle_couples[(max_index + 1) % len(cycle_couples)]
 
-                    for client_index in range(len(self.__sent_amount[provider_index])) :
-                        current_orders = 0
-                        for provider in self.__sent_amount :
-                            current_orders += int(provider[client_index])"""
-                        
-                        
+           
+            before_prov_idx = int(before_couple[0][1:]) - 1
+            before_cli_idx = int(before_couple[1][1:]) - 1
+            forward_prov_idx = int(forward_couple[0][1:]) - 1
+            forward_cli_idx = int(forward_couple[1][1:]) - 1
 
-                    
-                    
-            """if not provider_index == provider_to_max and client_index == client_to_max and self.__sent_amount[provider_index][client_index] > 0:
+            delta = min(
+                self.__sent_amount[before_prov_idx][before_cli_idx],
+                self.__sent_amount[forward_prov_idx][forward_cli_idx]
+            )
 
-                        if current_orders > max_order :
-                            order_diff = current_orders - max_order
-                            print("Order difference =", order_diff)
-                        
-                        self.__sent_amount[provider_index][client_index] -= order_diff"""
             
-            print("New transportation")
-            self.print_transportation_proposal()
+            coefficient = -1
+            for i in range(1, len(cycle_couples)):
+                idx = (max_index + i) % len(cycle_couples)
+                prov_idx = int(cycle_couples[idx][0][1:]) - 1
+                cli_idx = int(cycle_couples[idx][1][1:]) - 1
+                self.__sent_amount[prov_idx][cli_idx] += coefficient * delta
+                coefficient *= -1  # Alterner le coefficient
                         
                        
-
+            print("Adjusted transportation proposal matrix :")
             self.print_transportation_proposal()
 
+            return True
 
-            
 
 
         def check_negative_mc() :
-            max_neg = 0
+            
+            max_neg = -1
             coordinates = []
 
             for provider_index in range(len(self.marginal_costs_matrix)) :
@@ -309,10 +338,37 @@ class TransportationProposal():
                 print(f"Negative value ({max_neg}) found at P{coordinates[0]+1}, C{coordinates[1]+1}")
                 print("Adding it to the graph.")
                 self.graph.add_edge(f"P{coordinates[0]+1}", f"C{coordinates[1]+1}")
-                cycle = self.graph.get_cycle()[0]
-                cycle.append(cycle[0])
-                print("Resultant cycle :", cycle)
-                max_transportation(coordinates, cycle)
+                try :
+                    cycle = self.graph.get_cycle()[0]
+                    cycle.append(cycle[0])
+                except :
+                    print("\nAdded edge does not create a cycle. Transportation porposal cannot be improved by stepping stone.")
+                    return
+                
+                else :
+                    print("Resultant cycle :", cycle)
+                    if not max_transportation(coordinates, cycle) :
+                        return
+
+                    
+                    name = "Graph " + self.__problem.problem_number
+                    self.graph = graph.Graph(name, self.__problem.provider_n, self.__problem.client_n, self.__sent_amount)
+                    self.graph.print_graph()
+                    self.graph.unconnected(False)
+                    self.graph.check_cycle(False)
+
+                if self.graph.check_non_degenerate() is False:
+                    self.degenerate_stepping_stone()
+                
+                self.graph.print_graph()
+                
+                self.stepping_stone(iteration+1)
+        
+            else :
+                print("No negative value in marginal cost table, transportation proposal is optimal.")
+                self.print_transportation_proposal()
+                
+            
 
         compute_equations()
         #Sorting the dicts.
@@ -324,11 +380,11 @@ class TransportationProposal():
         self.print_potential_costs_matrix()
 
         compute_marginal_costs()
+        self.print_marginal_costs_matrix()
         
         print("Checking negative values in Marginal cost matrix")
         check_negative_mc()
 
-        self.print_marginal_costs_matrix()
 
 
 
