@@ -192,10 +192,10 @@ def plot_complexity(execution_times, execution_times2):
     x_values = range(1, len(execution_times) + 1)
 
     # Tracer le graphique à dispersion pour la fonction bleue
-    plt.scatter(x_values, execution_times, color='blue', label='Fonction Bleue')
+    plt.scatter(x_values, execution_times, color='blue', label='North-West')
 
     # Tracer le graphique à dispersion pour la fonction rouge
-    plt.scatter(x_values, execution_times2, color='red', label='Fonction Rouge')
+    plt.scatter(x_values, execution_times2, color='red', label='Balas-Hammer')
 
     plt.xlabel('Execution Iteration')
     plt.ylabel('Execution Time (seconds)')
