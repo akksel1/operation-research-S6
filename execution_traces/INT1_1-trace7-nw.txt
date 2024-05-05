@@ -1,0 +1,266 @@
+> 7
+
+Cost matrix :
+
+┌────────────┬────────────┬────────────┐
+│ 7          │   Client 1 │   Client 2 │
+├────────────┼────────────┼────────────┤
+│ Provider 1 │         50 │         20 │
+├────────────┼────────────┼────────────┤
+│ Provider 2 │         10 │         50 │
+├────────────┼────────────┼────────────┤
+│ Provider 3 │         50 │         40 │
+├────────────┼────────────┼────────────┤
+│ Provider 4 │         45 │         35 │
+└────────────┴────────────┴────────────┘
+
+Transportation Proposal matrix :
+
+┌────────────┬────────────┬────────────┬──────────────┐
+│ 7          │ Client 1   │ Client 2   │   Provisions │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 1 │ 50         │ 20         │          100 │
+│            │ ____       │ ____       │              │
+│            │ 100        │ 0          │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 2 │ 10         │ 50         │          200 │
+│            │ ____       │ ____       │              │
+│            │ 200        │ 0          │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 3 │ 50         │ 40         │          100 │
+│            │ ____       │ ____       │              │
+│            │ 0          │ 100        │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 4 │ 45         │ 35         │          200 │
+│            │ ____       │ ____       │              │
+│            │ 0          │ 200        │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Order      │ 300        │ 300        │          600 │
+└────────────┴────────────┴────────────┴──────────────┘
+Transportation Cost =  18000
+
+
+        ---- Starting unconnected algorithm ---
+
+
+
+
+        ---- Starting Breadth First Search (BFS) ---
+
+
+        ** Initial Node:  P1  **
+
+        ***** Iteration # 1 *****
+        Current node:  P1
+        Visited Nodes: {'P1'}
+        Parent Mapping: {'P1': None, 'P2': None, 'P3': None, 'P4': None, 'C1': None, 'C2': None}
+        Queue: ['C1']
+
+        ***** Iteration # 2 *****
+        Current node:  C1
+        Visited Nodes: {'C1', 'P1'}
+        Parent Mapping: {'P1': None, 'P2': None, 'P3': None, 'P4': None, 'C1': 'P1', 'C2': None}
+        Queue: ['P2']
+
+        ***** Iteration # 3 *****
+        Current node:  P2
+        Visited Nodes: {'C1', 'P1', 'P2'}
+        Parent Mapping: {'P1': None, 'P2': 'C1', 'P3': None, 'P4': None, 'C1': 'P1', 'C2': None}
+        Queue: []
+
+
+        ---- Starting Breadth First Search (BFS) ---
+
+
+        ** Initial Node:  P3  **
+
+        ***** Iteration # 1 *****
+        Current node:  P3
+        Visited Nodes: {'P3'}
+        Parent Mapping: {'P1': None, 'P2': None, 'P3': None, 'P4': None, 'C1': None, 'C2': None}
+        Queue: ['C2']
+
+        ***** Iteration # 2 *****
+        Current node:  C2
+        Visited Nodes: {'C2', 'P3'}
+        Parent Mapping: {'P1': None, 'P2': None, 'P3': None, 'P4': None, 'C1': None, 'C2': 'P3'}
+        Queue: ['P4']
+
+        ***** Iteration # 3 *****
+        Current node:  P4
+        Visited Nodes: {'P4', 'C2', 'P3'}
+        Parent Mapping: {'P1': None, 'P2': None, 'P3': None, 'P4': 'C2', 'C1': None, 'C2': 'P3'}
+        Queue: []
+
+        /!\ GRAPH UNCONNECTED /!\
+        IDENIFIED 2 SUBGRAPHS:
+                * SUBGRAPH # 1 :  {'C1', 'P1', 'P2'}
+                * SUBGRAPH # 2 :  {'P4', 'C2', 'P3'}
+
+
+        ---- Starting cycle algorithm ---
+        Performing BFS to detect any potential cycle...
+        Performing BFS to detect any potential cycle...
+        --> NO CYCLE DETECTED
+
+
+        ---- Starting cycle algorithm ---
+        Performing BFS to detect any potential cycle...
+        Performing BFS to detect any potential cycle...
+        --> NO CYCLE DETECTED
+
+
+        /!\ Transport Proposal is degenerated /!\
+        Starting degenerate stepping stone algorithm ...
+
+
+        ---- Starting cycle algorithm ---
+        Performing BFS to detect any potential cycle...
+        --> NO CYCLE DETECTED
+[('P1', 'C1', 100), ('P1', 'C2', 0), ('P2', 'C1', 200), ('P3', 'C2', 100), ('P4', 'C2', 200)]
+
+
+Stepping Stone iteration 1
+
+Potential Costs matrix :
+
+┌────────────┬────────────┬────────────┐
+│ 7          │   Client 1 │   Client 2 │
+├────────────┼────────────┼────────────┤
+│ Provider 1 │         50 │         20 │
+├────────────┼────────────┼────────────┤
+│ Provider 2 │         10 │        -20 │
+├────────────┼────────────┼────────────┤
+│ Provider 3 │         70 │         40 │
+├────────────┼────────────┼────────────┤
+│ Provider 4 │         65 │         35 │
+└────────────┴────────────┴────────────┘
+
+Marginal Costs matrix :
+
+┌────────────┬────────────┬────────────┐
+│ 7          │   Client 1 │   Client 2 │
+├────────────┼────────────┼────────────┤
+│ Provider 1 │          0 │          0 │
+├────────────┼────────────┼────────────┤
+│ Provider 2 │          0 │         70 │
+├────────────┼────────────┼────────────┤
+│ Provider 3 │        -20 │          0 │
+├────────────┼────────────┼────────────┤
+│ Provider 4 │        -20 │          0 │
+└────────────┴────────────┴────────────┘
+Checking negative values in Marginal cost matrix
+Negative value (-20) found at P4, C1
+Adding it to the graph.
+Resultant cycle : ['P1', 'C1', 'P4', 'C2', 'P1']
+Cycle Couples [['P1', 'C2'], ['P1', 'C1'], ['P4', 'C1'], ['P4', 'C2']]
+P4 C2 in cycle, updating max_row_val.
+P1 C1 in cycle, updating max_col_val.
+Max col val 100
+Max row val 200
+Maxing ['P4', 'C1'] with 100
+Adjusted transportation proposal matrix :
+
+Transportation Proposal matrix :
+
+┌────────────┬────────────┬────────────┬──────────────┐
+│ 7          │ Client 1   │ Client 2   │   Provisions │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 1 │ 50         │ 20         │          100 │
+│            │ ____       │ ____       │              │
+│            │ 0          │ 100        │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 2 │ 10         │ 50         │          200 │
+│            │ ____       │ ____       │              │
+│            │ 200        │ 0          │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 3 │ 50         │ 40         │          100 │
+│            │ ____       │ ____       │              │
+│            │ 0          │ 100        │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 4 │ 45         │ 35         │          200 │
+│            │ ____       │ ____       │              │
+│            │ 100        │ 100        │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Order      │ 300        │ 300        │          600 │
+└────────────┴────────────┴────────────┴──────────────┘
+
+
+Transportation Cost =  16000
+
+
+        ---- Starting unconnected algorithm ---
+
+
+
+        --> GRAPH CONNECTED
+
+
+        ---- Starting cycle algorithm ---
+        Performing BFS to detect any potential cycle...
+        --> NO CYCLE DETECTED
+
+
+        ---- Starting cycle algorithm ---
+        Performing BFS to detect any potential cycle...
+        --> NO CYCLE DETECTED
+
+
+Stepping Stone iteration 2
+
+Potential Costs matrix :
+
+┌────────────┬────────────┬────────────┐
+│ 7          │   Client 1 │   Client 2 │
+├────────────┼────────────┼────────────┤
+│ Provider 1 │         30 │         20 │
+├────────────┼────────────┼────────────┤
+│ Provider 2 │         10 │          0 │
+├────────────┼────────────┼────────────┤
+│ Provider 3 │         50 │         40 │
+├────────────┼────────────┼────────────┤
+│ Provider 4 │         45 │         35 │
+└────────────┴────────────┴────────────┘
+
+Marginal Costs matrix :
+
+┌────────────┬────────────┬────────────┐
+│ 7          │   Client 1 │   Client 2 │
+├────────────┼────────────┼────────────┤
+│ Provider 1 │         20 │          0 │
+├────────────┼────────────┼────────────┤
+│ Provider 2 │          0 │         50 │
+├────────────┼────────────┼────────────┤
+│ Provider 3 │          0 │          0 │
+├────────────┼────────────┼────────────┤
+│ Provider 4 │          0 │          0 │
+└────────────┴────────────┴────────────┘
+Checking negative values in Marginal cost matrix
+No negative value in marginal cost table, transportation proposal is optimal.
+
+Transportation Proposal matrix :
+
+┌────────────┬────────────┬────────────┬──────────────┐
+│ 7          │ Client 1   │ Client 2   │   Provisions │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 1 │ 50         │ 20         │          100 │
+│            │ ____       │ ____       │              │
+│            │ 0          │ 100        │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 2 │ 10         │ 50         │          200 │
+│            │ ____       │ ____       │              │
+│            │ 200        │ 0          │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 3 │ 50         │ 40         │          100 │
+│            │ ____       │ ____       │              │
+│            │ 0          │ 100        │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 4 │ 45         │ 35         │          200 │
+│            │ ____       │ ____       │              │
+│            │ 100        │ 100        │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Order      │ 300        │ 300        │          600 │
+└────────────┴────────────┴────────────┴──────────────┘
+
+
+Transportation Cost =  16000

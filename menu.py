@@ -45,7 +45,6 @@ def menu() :
         elif problem_choice == "2" :
             Tp.balas_hammer_initialization2()
         Tp.print_transportation_proposal()
-        Tp.transportation_cost()
         print("Do you want to optimize this problem (1), go to another problem (2), or quit the program (3)? ")
 
         problem_choice = input("> ")

@@ -229,8 +229,11 @@ class TransportationProposal():
         def max_transportation(coordinates, cycle) :
             def get_couples() :
                 cycle.pop(-1)
+                
                 couples = []
                 for i in range(len(cycle)) :
+                    if cycle[i][0] == "C" and i == 0 and cycle[-1][0] == "P" :
+                        couples.append([cycle[-1], cycle[i]])
                     if cycle[i][0] == "P" :
                         couples.append([cycle[i], cycle[i-1]])
                         if i < len(cycle)-1 :
@@ -454,6 +457,8 @@ class TransportationProposal():
 
         #Prints the table in the terminal.
         print(tabulate(table_content, headers=table_header, tablefmt="simple_grid"))
+        print("\n")
+        self.transportation_cost()
 
 
     def northwest_initialize(self):

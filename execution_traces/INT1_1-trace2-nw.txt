@@ -1,0 +1,142 @@
+> 2
+
+Cost matrix :
+
+┌────────────┬────────────┬────────────┐
+│ 2          │   Client 1 │   Client 2 │
+├────────────┼────────────┼────────────┤
+│ Provider 1 │         10 │         20 │
+├────────────┼────────────┼────────────┤
+│ Provider 2 │         30 │         10 │
+└────────────┴────────────┴────────────┘
+[[0, 0], [0, 0]]
+
+Transportation Proposal matrix :
+
+┌────────────┬────────────┬────────────┬──────────────┐
+│ 2          │ Client 1   │ Client 2   │   Provisions │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 1 │ 10         │ 20         │          100 │
+│            │ ____       │ ____       │              │
+│            │ 100        │ 0          │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 2 │ 30         │ 10         │          100 │
+│            │ ____       │ ____       │              │
+│            │ 0          │ 100        │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Order      │ 100        │ 100        │          200 │
+└────────────┴────────────┴────────────┴──────────────┘
+Transportation Cost =  2000
+
+
+
+        ---- Starting unconnected algorithm ---
+
+
+
+
+        ---- Starting Breadth First Search (BFS) ---
+
+
+        ** Initial Node:  P1  **
+
+        ***** Iteration # 1 *****
+        Current node:  P1
+        Visited Nodes: {'P1'}
+        Parent Mapping: {'P1': None, 'P2': None, 'C1': None, 'C2': None}
+        Queue: ['C1']
+
+        ***** Iteration # 2 *****
+        Current node:  C1
+        Visited Nodes: {'C1', 'P1'}
+        Parent Mapping: {'P1': None, 'P2': None, 'C1': 'P1', 'C2': None}
+        Queue: []
+
+
+        ---- Starting Breadth First Search (BFS) ---
+
+
+        ** Initial Node:  P2  **
+
+        ***** Iteration # 1 *****
+        Current node:  P2
+        Visited Nodes: {'P2'}
+        Parent Mapping: {'P1': None, 'P2': None, 'C1': None, 'C2': None}
+        Queue: ['C2']
+
+        ***** Iteration # 2 *****
+        Current node:  C2
+        Visited Nodes: {'P2', 'C2'}
+        Parent Mapping: {'P1': None, 'P2': None, 'C1': None, 'C2': 'P2'}
+        Queue: []
+
+        /!\ GRAPH UNCONNECTED /!\
+        IDENIFIED 2 SUBGRAPHS:
+                * SUBGRAPH # 1 :  {'C1', 'P1'}
+                * SUBGRAPH # 2 :  {'P2', 'C2'}
+
+
+        ---- Starting cycle algorithm ---
+        Performing BFS to detect any potential cycle...
+        Performing BFS to detect any potential cycle...
+        --> NO CYCLE DETECTED
+
+
+        ---- Starting cycle algorithm ---
+        Performing BFS to detect any potential cycle...
+        Performing BFS to detect any potential cycle...
+        --> NO CYCLE DETECTED
+
+
+        /!\ Transport Proposal is degenerated /!\
+        Starting degenerate stepping stone algorithm ...
+
+
+        ---- Starting cycle algorithm ---
+        Performing BFS to detect any potential cycle...
+        --> NO CYCLE DETECTED
+[('P1', 'C1', 100), ('P1', 'C2', 0), ('P2', 'C2', 100)]
+
+
+Stepping Stone iteration 1
+
+Potential Costs matrix :
+
+┌────────────┬────────────┬────────────┐
+│ 2          │   Client 1 │   Client 2 │
+├────────────┼────────────┼────────────┤
+│ Provider 1 │         10 │         20 │
+├────────────┼────────────┼────────────┤
+│ Provider 2 │          0 │         10 │
+└────────────┴────────────┴────────────┘
+
+Marginal Costs matrix :
+
+┌────────────┬────────────┬────────────┐
+│ 2          │   Client 1 │   Client 2 │
+├────────────┼────────────┼────────────┤
+│ Provider 1 │          0 │          0 │
+├────────────┼────────────┼────────────┤
+│ Provider 2 │         30 │          0 │
+└────────────┴────────────┴────────────┘
+Checking negative values in Marginal cost matrix
+No negative value in marginal cost table, transportation proposal is optimal.
+
+Transportation Proposal matrix :
+
+┌────────────┬────────────┬────────────┬──────────────┐
+│ 2          │ Client 1   │ Client 2   │   Provisions │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 1 │ 10         │ 20         │          100 │
+│            │ ____       │ ____       │              │
+│            │ 100        │ 0          │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 2 │ 30         │ 10         │          100 │
+│            │ ____       │ ____       │              │
+│            │ 0          │ 100        │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Order      │ 100        │ 100        │          200 │
+└────────────┴────────────┴────────────┴──────────────┘
+
+
+Transportation Cost =  2000
