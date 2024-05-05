@@ -1,0 +1,181 @@
+> 8
+
+Cost matrix :
+
+┌────────────┬────────────┬────────────┐
+│ 8          │   Client 1 │   Client 2 │
+├────────────┼────────────┼────────────┤
+│ Provider 1 │         50 │         20 │
+├────────────┼────────────┼────────────┤
+│ Provider 2 │         10 │         50 │
+├────────────┼────────────┼────────────┤
+│ Provider 3 │         55 │         40 │
+├────────────┼────────────┼────────────┤
+│ Provider 4 │         35 │         45 │
+├────────────┼────────────┼────────────┤
+│ Provider 5 │         12 │          8 │
+└────────────┴────────────┴────────────┘
+
+Transportation Proposal matrix :
+
+┌────────────┬────────────┬────────────┬──────────────┐
+│ 8          │ Client 1   │ Client 2   │   Provisions │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 1 │ 50         │ 20         │          100 │
+│            │ ____       │ ____       │              │
+│            │ 0          │ 100        │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 2 │ 10         │ 50         │          200 │
+│            │ ____       │ ____       │              │
+│            │ 200        │ 0          │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 3 │ 55         │ 40         │          100 │
+│            │ ____       │ ____       │              │
+│            │ 0          │ 100        │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 4 │ 35         │ 45         │          200 │
+│            │ ____       │ ____       │              │
+│            │ 100        │ 100        │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 5 │ 12         │ 8          │          200 │
+│            │ ____       │ ____       │              │
+│            │ 0          │ 200        │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Order      │ 300        │ 500        │          800 │
+└────────────┴────────────┴────────────┴──────────────┘
+Transportation Cost =  17600
+
+
+  ---- Starting unconnected algorithm ---
+
+
+
+
+        ---- Starting Breadth First Search (BFS) ---
+
+
+        ** Initial Node:  P1  **
+
+        ***** Iteration # 1 *****
+        Current node:  P1
+        Visited Nodes: {'P1'}
+        Parent Mapping: {'P1': None, 'P2': None, 'P3': None, 'P4': None, 'P5': None, 'C1': None, 'C2': None}
+        Queue: ['C2']
+
+        ***** Iteration # 2 *****
+        Current node:  C2
+        Visited Nodes: {'P1', 'C2'}
+        Parent Mapping: {'P1': None, 'P2': None, 'P3': None, 'P4': None, 'P5': None, 'C1': None, 'C2': 'P1'}
+        Queue: ['P3', 'P4', 'P5']
+
+        ***** Iteration # 3 *****
+        Current node:  P3
+        Visited Nodes: {'P1', 'C2', 'P4', 'P5', 'P3'}
+        Parent Mapping: {'P1': None, 'P2': None, 'P3': 'C2', 'P4': 'C2', 'P5': 'C2', 'C1': None, 'C2': 'P1'}
+        Queue: ['P4', 'P5']
+
+        ***** Iteration # 4 *****
+        Current node:  P4
+        Visited Nodes: {'P1', 'C2', 'P4', 'P5', 'P3'}
+        Parent Mapping: {'P1': None, 'P2': None, 'P3': 'C2', 'P4': 'C2', 'P5': 'C2', 'C1': None, 'C2': 'P1'}
+        Queue: ['P5', 'C1']
+
+        ***** Iteration # 5 *****
+        Current node:  P5
+        Visited Nodes: {'P1', 'C2', 'P4', 'P5', 'P3', 'C1'}
+        Parent Mapping: {'P1': None, 'P2': None, 'P3': 'C2', 'P4': 'C2', 'P5': 'C2', 'C1': 'P4', 'C2': 'P1'}
+        Queue: ['C1']
+
+        ***** Iteration # 6 *****
+        Current node:  C1
+        Visited Nodes: {'P1', 'C2', 'P4', 'P5', 'P3', 'C1'}
+        Parent Mapping: {'P1': None, 'P2': None, 'P3': 'C2', 'P4': 'C2', 'P5': 'C2', 'C1': 'P4', 'C2': 'P1'}
+        Queue: ['P2']
+
+        ***** Iteration # 7 *****
+        Current node:  P2
+        Visited Nodes: {'P2', 'P1', 'C2', 'P4', 'P5', 'P3', 'C1'}
+        Parent Mapping: {'P1': None, 'P2': 'C1', 'P3': 'C2', 'P4': 'C2', 'P5': 'C2', 'C1': 'P4', 'C2': 'P1'}
+        Queue: []
+
+        --> GRAPH CONNECTED
+
+
+        ---- Starting cycle algorithm ---
+        Performing BFS to detect any potential cycle...
+        --> NO CYCLE DETECTED
+
+
+        ---- Starting cycle algorithm ---
+        Performing BFS to detect any potential cycle...
+        --> NO CYCLE DETECTED
+--> NON DEGENERATED TRANSPORT PROPOSAL
+[('P1', 'C2', 100), ('P2', 'C1', 200), ('P3', 'C2', 100), ('P4', 'C1', 100), ('P4', 'C2', 100), ('P5', 'C2', 200)]
+
+
+Stepping Stone iteration 1
+
+Potential Costs matrix :
+
+┌────────────┬────────────┬────────────┐
+│ 8          │   Client 1 │   Client 2 │
+├────────────┼────────────┼────────────┤
+│ Provider 1 │         10 │         20 │
+├────────────┼────────────┼────────────┤
+│ Provider 2 │         10 │         20 │
+├────────────┼────────────┼────────────┤
+│ Provider 3 │         30 │         40 │
+├────────────┼────────────┼────────────┤
+│ Provider 4 │         35 │         45 │
+├────────────┼────────────┼────────────┤
+│ Provider 5 │         -2 │          8 │
+└────────────┴────────────┴────────────┘
+
+Marginal Costs matrix :
+
+┌────────────┬────────────┬────────────┐
+│ 8          │   Client 1 │   Client 2 │
+├────────────┼────────────┼────────────┤
+│ Provider 1 │         40 │          0 │
+├────────────┼────────────┼────────────┤
+│ Provider 2 │          0 │         30 │
+├────────────┼────────────┼────────────┤
+│ Provider 3 │         25 │          0 │
+├────────────┼────────────┼────────────┤
+│ Provider 4 │          0 │          0 │
+├────────────┼────────────┼────────────┤
+│ Provider 5 │         14 │          0 │
+└────────────┴────────────┴────────────┘
+Checking negative values in Marginal cost matrix
+No negative value in marginal cost table, transportation proposal is optimal.
+
+Transportation Proposal matrix :
+
+┌────────────┬────────────┬────────────┬──────────────┐
+│ 8          │ Client 1   │ Client 2   │   Provisions │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 1 │ 50         │ 20         │          100 │
+│            │ ____       │ ____       │              │
+│            │ 0          │ 100        │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 2 │ 10         │ 50         │          200 │
+│            │ ____       │ ____       │              │
+│            │ 200        │ 0          │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 3 │ 55         │ 40         │          100 │
+│            │ ____       │ ____       │              │
+│            │ 0          │ 100        │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 4 │ 35         │ 45         │          200 │
+│            │ ____       │ ____       │              │
+│            │ 100        │ 100        │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Provider 5 │ 12         │ 8          │          200 │
+│            │ ____       │ ____       │              │
+│            │ 0          │ 200        │              │
+├────────────┼────────────┼────────────┼──────────────┤
+│ Order      │ 300        │ 500        │          800 │
+└────────────┴────────────┴────────────┴──────────────┘
+
+
+Transportation Cost =  17600
